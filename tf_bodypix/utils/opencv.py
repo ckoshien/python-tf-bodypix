@@ -20,6 +20,8 @@ LOGGER = logging.getLogger(__name__)
 DEFAULT_WEBCAM_FOURCC = 'MJPG'
 outputFile="output.mp4"
 outFourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
+out = cv2.VideoWriter(outputFile, outFourcc, 30.0,
+                          (1280, 720))
 
 
 
@@ -125,7 +127,7 @@ def iter_read_video_images(
     video_capture: cv2.VideoCapture,
     image_size: ImageSize = None,
     interpolation: int = cv2.INTER_LINEAR,
-    repeat: bool = True,
+    repeat: bool = False,
     fps: float = None
 ) -> Iterable[np.ndarray]:
     video_images: Iterable[np.ndarray]
@@ -234,18 +236,17 @@ class ShowImageSink:
         if self.window_title:
             cv2.setWindowTitle(self.window_name, self.window_title)
         self.was_opened = True
+        
+        
 
     def __call__(self, image_array: np.ndarray):
         if self.is_closed:
             LOGGER.info('window closed')
             raise KeyboardInterrupt('window closed')
         image_array = np.asarray(image_array).astype(np.uint8)
-        out = cv2.VideoWriter(outputFile, outFourcc, 30.0,
-                          (get_image_size(image_array).width, get_image_size(image_array).height))
         if not self.was_opened:
             self.create_window(get_image_size(image_array))
         out.write(rgb_to_bgr(image_array))
-        LOGGER.info('window closed')
         cv2.imshow(self.window_name, rgb_to_bgr(image_array))
-        out.release()
-        cv2.destroyAllWindows()
+        #out.release()
+        #cv2.destroyAllWindows()
