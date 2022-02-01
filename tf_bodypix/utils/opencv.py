@@ -18,6 +18,9 @@ LOGGER = logging.getLogger(__name__)
 
 
 DEFAULT_WEBCAM_FOURCC = 'MJPG'
+outputFile="output.mp4"
+outFourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
+
 
 
 def iter_read_raw_video_images(
@@ -214,7 +217,9 @@ class ShowImageSink:
 
     def __exit__(self, *_, **__):
         if self.was_opened:
-            cv2.destroyWindow(self.window_name)
+            #out.release()
+            cv2.destroyAllWindows()
+            #video.release()
 
     @property
     def is_closed(self):
@@ -235,6 +240,12 @@ class ShowImageSink:
             LOGGER.info('window closed')
             raise KeyboardInterrupt('window closed')
         image_array = np.asarray(image_array).astype(np.uint8)
+        out = cv2.VideoWriter(outputFile, outFourcc, 30.0,
+                          (get_image_size(image_array).width, get_image_size(image_array).height))
         if not self.was_opened:
             self.create_window(get_image_size(image_array))
+        out.write(rgb_to_bgr(image_array))
+        LOGGER.info('window closed')
         cv2.imshow(self.window_name, rgb_to_bgr(image_array))
+        out.release()
+        cv2.destroyAllWindows()
